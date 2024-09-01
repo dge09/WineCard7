@@ -1,0 +1,480 @@
+﻿@page "/pWine"
+@using WineCard7.DB.DTOs
+@using WineCard7.DB.Entitys
+@using WineCard7.DB.Services
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Wine</PageTitle>
+
+@if (userIsAuthenticated)
+{
+    <h1>Wine</h1>
+    @if (ShowCreateModal)
+    {
+        <dialog open="@ShowCreateModal">
+            <div>
+                <label>Name:</label>
+                <InputText @bind-Value="NewWine.Name"></InputText>
+            </div>
+            <div>
+                <label>Preis:</label>
+                <InputNumber @bind-Value="NewWine.Price.PriceperBottle"></InputNumber>
+            </div>
+            <div>
+                <label>Type:</label>
+                <InputText @bind-Value="NewWine.Type.Name"></InputText>
+            </div>
+            <div>
+                <label>Herkunftsland:</label>
+                <InputText @bind-Value="NewWine.OriginCountry.Name"></InputText>
+            </div>
+            <div>
+                <label>Jahrgang:</label>
+                <InputNumber @bind-Value="NewWine.Year.Year"></InputNumber>
+            </div>
+            <div>
+                <label>Weingut:</label>
+                <InputText @bind-Value="NewWine.Winery.Name"></InputText>
+            </div>
+            <div>
+                <label>Region:</label>
+                <InputText @bind-Value="NewWine.OriginFederalState.Name"></InputText>
+            </div>
+            <div>
+                <label>Rebsorte:</label>
+                <InputText @bind-Value="NewWine.GrapeVariety.Name"></InputText>
+            </div>
+            <div>
+                <button @onclick="CloseDialog">Zurück</button>
+                <button @onclick="CreateAsync">Speichern</button>
+            </div>
+        </dialog>
+    
+    }
+
+    @if (ShowUpdateModal)
+    {
+        <dialog open="@ShowUpdateModal">
+            <div>
+                <label>Name:</label>
+                <InputText @bind-Value="SelectedWine.Name"></InputText>
+            </div>
+            <div>
+                <label>Preis:</label>
+                <InputNumber @bind-Value="SelectedWine.Price.PriceperBottle"></InputNumber>
+            </div>
+            <div>
+                <label>Type:</label>
+                <InputText @bind-Value="SelectedWine.Type.Name"></InputText>
+            </div>
+            <div>
+                <label>Herkunftsland:</label>
+                <InputText @bind-Value="SelectedWine.OriginCountry.Name"></InputText>
+            </div>
+            <div>
+                <label>Jahrgang:</label>
+                <InputNumber @bind-Value="SelectedWine.Year.Year"></InputNumber>
+            </div>
+            <div>
+                <label>Weingut:</label>
+                <InputText @bind-Value="SelectedWine.Winery.Name"></InputText>
+            </div>
+            <div>
+                <label>Region:</label>
+                <InputText @bind-Value="SelectedWine.OriginFederalState.Name"></InputText>
+            </div>
+            <div>
+                <label>Rebsorte:</label>
+                <InputText @bind-Value="SelectedWine.GrapeVariety.Name"></InputText>
+            </div>
+            <div>
+                <button @onclick="CloseDialog">Zurück</button>
+                <button @onclick="UpdateAsync">Speichern</button>
+            </div>
+        </dialog>
+
+    }
+
+    @if (ShowDeleteModal)
+    {
+        <dialog open="@ShowDeleteModal">
+            <div>
+                <label>Name: @SelectedWine.Name</label>
+            </div>
+            <div>
+                <label>Preis: SelectedWine.Price.PriceperBottle</label>
+            </div>
+            <div>
+                <label>Type: @SelectedWine.Type.Name</label>
+            </div>
+            <div>
+                <label>Herkunftsland: @SelectedWine.OriginCountry.Name</label>
+            </div>
+            <div>
+                <label>Jahrgang: @SelectedWine.Year.Year</label>
+            </div>
+            <div>
+                <label>Weingut: @SelectedWine.Winery.Name</label>
+            </div>
+            <div>
+                <label>Region: @SelectedWine.OriginFederalState.Name</label>
+            </div>
+            <div>
+                <label>Rebsorte: @SelectedWine.GrapeVariety.Name</label>
+            </div>
+            <div>
+                <button @onclick="CloseDialog">Zurück</button>
+                <button @onclick="DeleteAsync">Löschen</button>
+            </div>
+        </dialog>
+    }
+
+
+
+
+    <button @onclick="ShowCreatePage">Hinzufügen</button>
+    <table class="table table-striped table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Preis</th>
+                <th>Type</th>
+                <th>Herkunftsland</th>
+                <th>Jahrgang</th>
+                <th>Weingut</th>
+                <th>Region</th>
+                <th>Rebsorte</th>
+                <th>Bearbeiten</th>
+                <th>Löschen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Wine wine in Wines)
+            {
+                <tr>
+                    <td>@wine.Name</td>
+                    <td>@wine.Price.PriceperBottle€</td>
+                    <td>@wine.Type.Name</td>
+                    <td>@wine.OriginCountry.Name</td>
+                    <td>@wine.Year.Year</td>
+                    <td>@wine.Winery.Name</td>
+                    <td>@wine.OriginFederalState.Name</td>
+                    <td>@wine.GrapeVariety.Name</td>
+                    <td>
+                        <button @onclick="() => ShowUpdatePage(wine)">Bearbeiten</button>
+                    </td>
+                    <td>
+                        <button @onclick="() => ShowDeletePage(wine)">Löschen</button>
+                    </td>
+                </tr>
+            
+            }
+        </tbody>
+</table>
+}
+else
+{
+    <h1>You need to Login First!</h1>
+}
+
+
+@code {
+    private List<Card> Cards = new List<Card>();
+    private List<Wine> Wines = new List<Wine>();
+    private List<WGrapeVariety> GrapeVarietys = new List<WGrapeVariety>();
+    private List<WOriginCountry> OriginCountrys = new List<WOriginCountry>();
+    private List<WOriginFederalState> OriginFederalStates = new List<WOriginFederalState>();
+    private List<WPrice> Prices = new List<WPrice>();
+    private List<WType> Types = new List<WType>();
+    private List<WWinery> Winerys = new List<WWinery>();
+    private List<WYear> Years = new List<WYear>();
+
+    private bool ShowCreateModal = false;
+    private bool ShowUpdateModal = false;
+    private bool ShowDeleteModal = false;
+
+    private Wine NewWine = new();
+    private Wine SelectedWine = new();
+
+    private bool userIsAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateListsAsync();
+        await GenerateNewWineAsync();
+
+        var authState = await AuthenticationStateProvider
+            .GetAuthenticationStateAsync();
+        userIsAuthenticated = authState.User.Identity.IsAuthenticated;
+        // var user = authState.User;
+
+        await base.OnInitializedAsync();
+
+    }
+
+    private async Task CreateAsync()
+    {
+        await SecureAttributeExistanceAsync(NewWine);
+
+        NewWine = GetWineValues(NewWine);
+
+        await MyServices.wineServices.CreateAsync(NewWine);
+
+        await UpdateListsAsync();
+
+        CloseDialog();
+    }
+
+    private async Task UpdateAsync()
+    {
+        await SecureAttributeExistanceAsync(SelectedWine);
+
+        SelectedWine = GetWineValues(SelectedWine);
+
+        await MyServices.wineServices.UpdateAsync(SelectedWine);
+
+        await UpdateListsAsync();
+
+        CloseDialog();
+    }
+
+    private async Task DeleteAsync()
+    {
+        await MyServices.wineServices.DeleteByIDAsync(SelectedWine.ID);
+
+        await UpdateListsAsync();
+
+        CloseDialog();
+    }
+
+    private Wine GetWineValues(Wine sourceWine)
+    {
+        Wine wineToReturn = new();
+
+        sourceWine.PriceID = Prices.Where(x => x.PriceperBottle == sourceWine.Price.PriceperBottle).First().ID;
+        sourceWine.Price = Prices.Where(x => x.PriceperBottle == sourceWine.Price.PriceperBottle).First();
+        sourceWine.TypeID = Types.Where(x => x.Name == sourceWine.Type.Name).First().ID;
+        sourceWine.Type = Types.Where(x => x.Name == sourceWine.Type.Name).First();
+        sourceWine.OriginCountryID = OriginCountrys.Where(x => x.Name == sourceWine.OriginCountry.Name).First().ID;
+        sourceWine.OriginCountry = OriginCountrys.Where(x => x.Name == sourceWine.OriginCountry.Name).First();
+        sourceWine.YearÎD = Years.Where(x => x.Year == sourceWine.Year.Year).First().ID;
+        sourceWine.Year = Years.Where(x => x.Year == sourceWine.Year.Year).First();
+        sourceWine.WineryID = Winerys.Where(x => x.Name == sourceWine.Winery.Name).First().ID;
+        sourceWine.Winery = Winerys.Where(x => x.Name == sourceWine.Winery.Name).First();
+        sourceWine.OriginFederalStateID = OriginFederalStates.Where(x => x.Name == sourceWine.OriginFederalState.Name).First().ID;
+        sourceWine.OriginFederalState = OriginFederalStates.Where(x => x.Name == sourceWine.OriginFederalState.Name).First();
+        sourceWine.GrapeVarietyID = GrapeVarietys.Where(x => x.Name == sourceWine.GrapeVariety.Name).First().ID;
+        sourceWine.GrapeVariety = GrapeVarietys.Where(x => x.Name == sourceWine.GrapeVariety.Name).First();
+
+        return sourceWine;
+
+    }
+
+    private async Task GenerateNewWineAsync()
+    {
+        if (Prices.Count < 1 && 
+            Types.Count < 1 &&
+            OriginCountrys.Count < 1 &&
+            Years.Count < 1 &&
+            Winerys.Count < 1 &&
+            OriginFederalStates.Count < 1 &&
+            GrapeVarietys.Count < 1)
+        {
+            CsvDTO dto = new();
+            dto.Name = "Terre Siciliane"; 
+            dto.PricePerBottle = 28.4F;
+            dto.Type = "Rosato";
+            dto.OriginCountry = "Italien";
+            dto.Year = 2021; 
+            dto.Winery = "Baglio Mancini";
+            dto.OriginFederalState = "Sizilien";
+            dto.GrapeVariety = "Cuvée";
+
+            await SecureAttributeExistanceAsync(dto);
+        }
+
+        NewWine.Name = "Neuer Wein";
+        NewWine.PriceID = Prices.First().ID;
+        NewWine.Price = Prices.First();
+        NewWine.TypeID = Types.First().ID;
+        NewWine.Type = Types.First();
+        NewWine.OriginCountryID = OriginCountrys.First().ID;
+        NewWine.OriginCountry = OriginCountrys.First();
+        NewWine.YearÎD = Years.First().ID;
+        NewWine.Year = Years.First();
+        NewWine.WineryID = Winerys.First().ID;
+        NewWine.Winery = Winerys.First();
+        NewWine.OriginFederalStateID = OriginFederalStates.First().ID;
+        NewWine.OriginFederalState = OriginFederalStates.First();
+        NewWine.GrapeVarietyID = GrapeVarietys.First().ID;
+        NewWine.GrapeVariety = GrapeVarietys.First();
+    }
+
+    private void CloseDialog()
+    {
+        ShowCreateModal = false;
+        ShowUpdateModal = false;
+        ShowDeleteModal = false;
+    }
+
+
+    private async Task SecureAttributeExistanceAsync(Wine wine)
+    {
+        await UpdateListsAsync();
+
+        if (GrapeVarietys.Where(x => x.Name == wine.GrapeVariety.Name).Count() < 1)
+        {
+            WGrapeVariety newGV = new WGrapeVariety();
+            newGV.Name = wine.GrapeVariety.Name;
+            await MyServices.grapeVarietyServices.CreateAsync(newGV);
+            await UpdateListsAsync();
+        }
+
+        if (OriginCountrys.Where(x => x.Name == wine.OriginCountry.Name).Count() < 1)
+        {
+            WOriginCountry newOC = new WOriginCountry();
+            newOC.Name = wine.OriginCountry.Name;
+            await MyServices.originCountryServices.CreateAsync(newOC);
+            await UpdateListsAsync();
+        }
+
+        if (OriginFederalStates.Where(x => x.Name == wine.OriginFederalState.Name).Count() < 1)
+        {
+            WOriginFederalState newOFS = new WOriginFederalState();
+            newOFS.Name = wine.OriginFederalState.Name;
+            await MyServices.originFederalStateServices.CreateAsync(newOFS);
+            await UpdateListsAsync();
+        }
+
+        if (Types.Where(x => x.Name == wine.Type.Name).Count() < 1)
+        {
+            WType newT = new WType();
+            newT.Name = wine.Type.Name;
+            await MyServices.typeServices.CreateAsync(newT);
+            await UpdateListsAsync();
+        }
+
+        if (Winerys.Where(x => x.Name == wine.Winery.Name).Count() < 1)
+        {
+            WWinery newW = new WWinery();
+            newW.Name = wine.Winery.Name;
+            await MyServices.wineryServices.CreateAsync(newW);
+            await UpdateListsAsync();
+        }
+
+        if (Prices.Where(x => x.PriceperBottle == wine.Price.PriceperBottle).Count() < 1)
+        {
+            WPrice newP = new WPrice();
+            newP.PriceperBottle = wine.Price.PriceperBottle;
+            await MyServices.priceServices.CreateAsync(newP);
+            await UpdateListsAsync();
+        }
+
+        if (Years.Where(x => x.Year == wine.Year.Year).Count() < 1)
+        {
+            WYear newY = new WYear();
+            newY.Year = wine.Year.Year;
+            await MyServices.yearServices.CreateAsync(newY);
+            await UpdateListsAsync();
+        }
+    }
+
+    private async Task SecureAttributeExistanceAsync(CsvDTO dto)
+    {
+        await UpdateListsAsync();
+
+        if (GrapeVarietys.Where(x => x.Name == dto.GrapeVariety).Count() < 1)
+        {
+            WGrapeVariety newGV = new WGrapeVariety();
+            newGV.Name = dto.GrapeVariety;
+            await MyServices.grapeVarietyServices.CreateAsync(newGV);
+            await UpdateListsAsync();
+        }
+
+        if (OriginCountrys.Where(x => x.Name == dto.OriginCountry).Count() < 1)
+        {
+            WOriginCountry newOC = new WOriginCountry();
+            newOC.Name = dto.OriginCountry;
+            await MyServices.originCountryServices.CreateAsync(newOC);
+            await UpdateListsAsync();
+        }
+
+        if (OriginFederalStates.Where(x => x.Name == dto.OriginFederalState).Count() < 1)
+        {
+            WOriginFederalState newOFS = new WOriginFederalState();
+            newOFS.Name = dto.OriginFederalState;
+            await MyServices.originFederalStateServices.CreateAsync(newOFS);
+            await UpdateListsAsync();
+        }
+
+        if (Types.Where(x => x.Name == dto.Type).Count() < 1)
+        {
+            WType newT = new WType();
+            newT.Name = dto.Type;
+            await MyServices.typeServices.CreateAsync(newT);
+            await UpdateListsAsync();
+        }
+
+        if (Winerys.Where(x => x.Name == dto.Winery).Count() < 1)
+        {
+            WWinery newW = new WWinery();
+            newW.Name = dto.Winery;
+            await MyServices.wineryServices.CreateAsync(newW);
+            await UpdateListsAsync();
+        }
+
+        if (Prices.Where(x => x.PriceperBottle == dto.PricePerBottle).Count() < 1)
+        {
+            WPrice newP = new WPrice();
+            newP.PriceperBottle = dto.PricePerBottle;
+            await MyServices.priceServices.CreateAsync(newP);
+            await UpdateListsAsync();
+        }
+
+        if (Years.Where(x => x.Year == dto.Year).Count() < 1)
+        {
+            WYear newY = new WYear();
+            newY.Year = dto.Year;
+            await MyServices.yearServices.CreateAsync(newY);
+            await UpdateListsAsync();
+        }
+    }
+
+    private async Task ShowCreatePage()
+    {
+        NewWine = new();
+        await GenerateNewWineAsync();
+
+        ShowCreateModal = true;
+    }
+
+    private void ShowUpdatePage(Wine wine)
+    {
+        SelectedWine = wine;
+
+        ShowUpdateModal = true;
+    }
+
+
+    private void ShowDeletePage(Wine wine)
+    {
+        SelectedWine = wine;
+
+        ShowDeleteModal = true;
+    }
+
+
+    private async Task UpdateListsAsync()
+    {
+        GrapeVarietys = await MyServices.grapeVarietyServices.GetAllAsync();
+        OriginCountrys = await MyServices.originCountryServices.GetAllAsync();
+        OriginFederalStates = await MyServices.originFederalStateServices.GetAllAsync();
+        Types = await MyServices.typeServices.GetAllAsync();
+        Winerys = await MyServices.wineryServices.GetAllAsync();
+        Prices = await MyServices.priceServices.GetAllAsync();
+        Years = await MyServices.yearServices.GetAllAsync();
+        Cards = await MyServices.cardServices.GetAllAsync();
+        Wines = await MyServices.wineServices.GetAllAsync();
+    }
+}

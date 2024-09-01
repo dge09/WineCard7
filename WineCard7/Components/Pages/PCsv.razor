@@ -1,0 +1,30 @@
+﻿@page "/pCsv"
+@using WineCard7.DB.Services
+@rendermode InteractiveServer
+
+<PageTitle>Csv import</PageTitle>
+
+<h1>Csv import</h1>
+
+<div>
+    <InputFile OnChange="ImportData"></InputFile>
+</div>
+
+@code {
+    private async Task ImportData(InputFileChangeEventArgs e)
+    {
+        string filepath = Directory.GetCurrentDirectory() + @"/wwwroot/upload.csv";
+
+        using (var reader = e.File.OpenReadStream())
+        {
+            using (var stream = new FileStream(filepath, FileMode.Create))
+            {
+                await reader.CopyToAsync(stream);
+            }
+        }
+
+        await MyServices.csvServices.ImportDataAsync(filepath);
+    }
+
+
+}
