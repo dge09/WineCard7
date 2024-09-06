@@ -4,6 +4,16 @@
 @using WineCard7.DB.Entitys
 @using WineCard7.DB.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IBaseServices<Card> cardServices
+@inject IBaseServices<WGrapeVariety> grapeVarietyServices
+@inject IBaseServices<Wine> wineServices
+@inject IBaseServices<WLocation> locationServices
+@inject IBaseServices<WOriginCountry> originCountryServices
+@inject IBaseServices<WOriginFederalState> originFederalStateServices
+@inject IBaseServices<WPrice> priceServices
+@inject IBaseServices<WType> typeServices
+@inject IBaseServices<WWinery> wineryServices
+@inject IBaseServices< WYear > yearServices
 @rendermode InteractiveServer
 
 <PageTitle>Karten</PageTitle>
@@ -206,7 +216,7 @@ else
     {
         NewCard.Wines = GetCardWinesValues();
 
-        await MyServices.cardServices.CreateAsync(NewCard);
+        await cardServices.CreateAsync(NewCard);
 
         await UpdateListsAsync();
 
@@ -217,7 +227,7 @@ else
     {
         SelectedCard.Wines = GetCardWinesValues();
 
-        await MyServices.cardServices.UpdateAsync(SelectedCard);
+        await cardServices.UpdateAsync(SelectedCard);
 
         await UpdateListsAsync();
 
@@ -226,7 +236,7 @@ else
 
     private async Task DeleteAsync()
     {
-        await MyServices.cardServices.DeleteByIDAsync(SelectedCard.ID);
+        await cardServices.DeleteByIDAsync(SelectedCard.ID);
 
         await UpdateListsAsync();
 
@@ -249,34 +259,6 @@ else
 
     }
 
-    // private async Task GenerateNewWineAsync()
-    // {
-    //     if (Prices.Count < 1 &&
-    //         Types.Count < 1 &&
-    //         OriginCountrys.Count < 1 &&
-    //         Years.Count < 1 &&
-    //         Winerys.Count < 1 &&
-    //         OriginFederalStates.Count < 1 &&
-    //         GrapeVarietys.Count < 1)
-    //     {
-    //         CsvDTO dto = new();
-    //         dto.Name = "Terre Siciliane";
-    //         dto.PricePerBottle = 28.4F;
-    //         dto.Type = "Rosato";
-    //         dto.OriginCountry = "Italien";
-    //         dto.Year = 2021;
-    //         dto.Winery = "Baglio Mancini";
-    //         dto.OriginFederalState = "Sizilien";
-    //         dto.GrapeVariety = "Cuvée";
-
-    //         await SecureAttributeExistanceAsync(dto);
-    //     }
-
-    //     NewCard.Name = "Neue Weinkarte";
-    //     NewCard.Description = "Weinkarte für ...";
-    //     ResetCardWineDTOList();
-    // }
-
     private void CloseDialog()
     {
         ShowDetailsModal = false;
@@ -284,129 +266,6 @@ else
         ShowUpdateModal = false;
         ShowDeleteModal = false;
     }
-
-
-    // private async Task SecureAttributeExistanceAsync(Wine wine)
-    // {
-    //     await UpdateListsAsync();
-
-    //     if (GrapeVarietys.Where(x => x.Name == wine.GrapeVariety.Name).Count() < 1)
-    //     {
-    //         WGrapeVariety newGV = new WGrapeVariety();
-    //         newGV.Name = wine.GrapeVariety.Name;
-    //         await MyServices.grapeVarietyServices.CreateAsync(newGV);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (OriginCountrys.Where(x => x.Name == wine.OriginCountry.Name).Count() < 1)
-    //     {
-    //         WOriginCountry newOC = new WOriginCountry();
-    //         newOC.Name = wine.OriginCountry.Name;
-    //         await MyServices.originCountryServices.CreateAsync(newOC);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (OriginFederalStates.Where(x => x.Name == wine.OriginFederalState.Name).Count() < 1)
-    //     {
-    //         WOriginFederalState newOFS = new WOriginFederalState();
-    //         newOFS.Name = wine.OriginFederalState.Name;
-    //         await MyServices.originFederalStateServices.CreateAsync(newOFS);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Types.Where(x => x.Name == wine.Type.Name).Count() < 1)
-    //     {
-    //         WType newT = new WType();
-    //         newT.Name = wine.Type.Name;
-    //         await MyServices.typeServices.CreateAsync(newT);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Winerys.Where(x => x.Name == wine.Winery.Name).Count() < 1)
-    //     {
-    //         WWinery newW = new WWinery();
-    //         newW.Name = wine.Winery.Name;
-    //         await MyServices.wineryServices.CreateAsync(newW);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Prices.Where(x => x.PriceperBottle == wine.Price.PriceperBottle).Count() < 1)
-    //     {
-    //         WPrice newP = new WPrice();
-    //         newP.PriceperBottle = wine.Price.PriceperBottle;
-    //         await MyServices.priceServices.CreateAsync(newP);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Years.Where(x => x.Year == wine.Year.Year).Count() < 1)
-    //     {
-    //         WYear newY = new WYear();
-    //         newY.Year = wine.Year.Year;
-    //         await MyServices.yearServices.CreateAsync(newY);
-    //         await UpdateListsAsync();
-    //     }
-    // }
-
-    // private async Task SecureAttributeExistanceAsync(CsvDTO dto)
-    // {
-    //     await UpdateListsAsync();
-
-    //     if (GrapeVarietys.Where(x => x.Name == dto.GrapeVariety).Count() < 1)
-    //     {
-    //         WGrapeVariety newGV = new WGrapeVariety();
-    //         newGV.Name = dto.GrapeVariety;
-    //         await MyServices.grapeVarietyServices.CreateAsync(newGV);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (OriginCountrys.Where(x => x.Name == dto.OriginCountry).Count() < 1)
-    //     {
-    //         WOriginCountry newOC = new WOriginCountry();
-    //         newOC.Name = dto.OriginCountry;
-    //         await MyServices.originCountryServices.CreateAsync(newOC);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (OriginFederalStates.Where(x => x.Name == dto.OriginFederalState).Count() < 1)
-    //     {
-    //         WOriginFederalState newOFS = new WOriginFederalState();
-    //         newOFS.Name = dto.OriginFederalState;
-    //         await MyServices.originFederalStateServices.CreateAsync(newOFS);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Types.Where(x => x.Name == dto.Type).Count() < 1)
-    //     {
-    //         WType newT = new WType();
-    //         newT.Name = dto.Type;
-    //         await MyServices.typeServices.CreateAsync(newT);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Winerys.Where(x => x.Name == dto.Winery).Count() < 1)
-    //     {
-    //         WWinery newW = new WWinery();
-    //         newW.Name = dto.Winery;
-    //         await MyServices.wineryServices.CreateAsync(newW);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Prices.Where(x => x.PriceperBottle == dto.PricePerBottle).Count() < 1)
-    //     {
-    //         WPrice newP = new WPrice();
-    //         newP.PriceperBottle = dto.PricePerBottle;
-    //         await MyServices.priceServices.CreateAsync(newP);
-    //         await UpdateListsAsync();
-    //     }
-
-    //     if (Years.Where(x => x.Year == dto.Year).Count() < 1)
-    //     {
-    //         WYear newY = new WYear();
-    //         newY.Year = dto.Year;
-    //         await MyServices.yearServices.CreateAsync(newY);
-    //         await UpdateListsAsync();
-    //     }
-    // }
 
     private async Task ShowCreatePage()
     {
@@ -422,7 +281,7 @@ else
     {
         using (DataContext dataContext = new())
         {
-            await dc.Entry(card).Collection(c => c.Wines).LoadAsync();
+            await dataContext.Entry(card).Collection(c => c.Wines).LoadAsync();
         }
 
         SelectedCard = card;
@@ -437,7 +296,7 @@ else
 
         using (DataContext dataContext = new())
         {
-            await dc.Entry(card).Collection(c => c.Wines).LoadAsync();
+            await dataContext.Entry(card).Collection(c => c.Wines).LoadAsync();
         }
 
 
@@ -455,15 +314,15 @@ else
 
     private async Task UpdateListsAsync()
     {
-        GrapeVarietys = await MyServices.grapeVarietyServices.GetAllAsync();
-        OriginCountrys = await MyServices.originCountryServices.GetAllAsync();
-        OriginFederalStates = await MyServices.originFederalStateServices.GetAllAsync();
-        Types = await MyServices.typeServices.GetAllAsync();
-        Winerys = await MyServices.wineryServices.GetAllAsync();
-        Prices = await MyServices.priceServices.GetAllAsync();
-        Years = await MyServices.yearServices.GetAllAsync();
-        Cards = await MyServices.cardServices.GetAllAsync();
-        Wines = await MyServices.wineServices.GetAllAsync();
+        GrapeVarietys = await grapeVarietyServices.GetAllAsync();
+        OriginCountrys = await originCountryServices.GetAllAsync();
+        OriginFederalStates = await originFederalStateServices.GetAllAsync();
+        Types = await typeServices.GetAllAsync();
+        Winerys = await wineryServices.GetAllAsync();
+        Prices = await priceServices.GetAllAsync();
+        Years = await yearServices.GetAllAsync();
+        Cards = await cardServices.GetAllAsync();
+        Wines = await wineServices.GetAllAsync();
     }
 
     private void ResetCardWineDTOList()

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WineCard7.Components;
 using WineCard7.Components.Account;
 using WineCard7.Data;
+using WineCard7.DB.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,10 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+// Registrating Generic CRUD IBaseServices
+builder.Services.AddScoped(typeof(IBaseServices<>), typeof(BaseServices<>));
 
 builder.Services.AddAuthentication(options =>
     {
